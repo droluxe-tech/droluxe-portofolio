@@ -1,0 +1,1839 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>DraXd — Dra</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖤</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #0a0a0a; color: #d4d4d4;
+    line-height: 1.7; overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 130px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; padding: 0 24px; }
+
+  /* PAGE SYSTEM */
+  .page { display: none; animation: pageIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); min-height: calc(100vh - 130px); }
+  .page.active { display: block; }
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* INTRO */
+  #introScreen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0a0a0a;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px; text-align: center;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+  }
+  #introScreen.fade-out { opacity: 0; visibility: hidden; }
+  .intro-logo {
+    width: 90px; height: 90px; border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(192, 192, 192, 0.3);
+    margin-bottom: 24px;
+    box-shadow: 0 0 30px rgba(192, 192, 192, 0.15);
+    animation: logoPulse 3s ease-in-out infinite;
+  }
+  @keyframes logoPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(192, 192, 192, 0.15); transform: scale(1); }
+    50% { box-shadow: 0 0 50px rgba(192, 192, 192, 0.3); transform: scale(1.04); }
+  }
+  .intro-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem; font-weight: 700;
+    color: #e8e8e8; margin-bottom: 8px;
+    letter-spacing: -0.5px;
+  }
+  .intro-sub { font-size: 0.9rem; color: #808080; margin-bottom: 32px; }
+  .intro-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 32px;
+    background: linear-gradient(180deg, #e8e8e8, #a0a0a0);
+    color: #0a0a0a; border: none; border-radius: 10px;
+    font-weight: 600; font-size: 0.95rem;
+    cursor: pointer; transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(192, 192, 192, 0.2);
+    font-family: inherit;
+  }
+  .intro-btn:hover { transform: translateY(-2px) scale(1.03); }
+  #loadingBox { display: none; flex-direction: column; align-items: center; gap: 16px; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(192, 192, 192, 0.1);
+    border-top-color: #e8e8e8;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem; color: #a0a0a0;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  /* HERO PAGE */
+  .hero-wrap {
+    position: relative; min-height: calc(100vh - 130px);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; padding: 40px 24px;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background-image: url('./background.jpg');
+    background-size: cover; background-position: center;
+    filter: brightness(0.65) contrast(1.1);
+    z-index: 0;
+  }
+  .hero-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(10, 10, 10, 0.75);
+  }
+  .banner-top {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 220px;
+    object-fit: cover; z-index: 1;
+    opacity: 0.5;
+    mask-image: linear-gradient(180deg, #000 40%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, #000 40%, transparent 100%);
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    max-width: 700px; text-align: center;
+    display: flex; flex-direction: column;
+    align-items: center;
+  }
+  .hero-avatar {
+    width: 130px; height: 130px; border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #0a0a0a;
+    outline: 1px solid rgba(192, 192, 192, 0.4);
+    box-shadow: 0 0 50px rgba(192, 192, 192, 0.2);
+    margin-bottom: 20px;
+    filter: grayscale(20%);
+    transition: filter 0.4s, transform 0.4s;
+    animation: avatarFloat 4s ease-in-out infinite;
+  }
+  @keyframes avatarFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .hero-avatar:hover { filter: grayscale(0%); transform: scale(1.05); }
+  .hero-welcome {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.72rem; color: #a0a0a0;
+    letter-spacing: 4px; text-transform: uppercase;
+    padding: 8px 18px;
+    border: 1px solid rgba(192, 192, 192, 0.2);
+    border-radius: 20px; margin-bottom: 20px;
+    font-weight: 500;
+    background: rgba(10,10,10,0.5);
+    backdrop-filter: blur(8px);
+  }
+  .hero-welcome svg { color: #c0c0c0; }
+  .hero-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 700; line-height: 1;
+    letter-spacing: -1.5px;
+    background: linear-gradient(180deg, #ffffff 0%, #b0b0b0 50%, #707070 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 18px;
+  }
+  .hero-sub {
+    color: #c0c0c0; font-size: 1rem;
+    max-width: 520px; margin: 0 auto 32px;
+    line-height: 1.7;
+  }
+  .hero-actions {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    justify-content: center;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 13px 28px;
+    background: linear-gradient(180deg, #e8e8e8, #a0a0a0);
+    color: #0a0a0a; text-decoration: none;
+    border-radius: 8px; font-weight: 600;
+    font-size: 0.9rem; letter-spacing: 0.3px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(192, 192, 192, 0.15);
+    border: none; cursor: pointer; font-family: inherit;
+  }
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(192, 192, 192, 0.3);
+  }
+  .hero-cta.green {
+    background: linear-gradient(180deg, #4ade80, #16a34a);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+  }
+  .hero-cta.green:hover {
+    box-shadow: 0 8px 30px rgba(34, 197, 94, 0.5);
+  }
+  .hero-cta svg { transition: transform 0.3s; }
+  .hero-cta:hover svg { transform: translateX(4px); }
+
+  /* PAGE SECTION */
+  .page-section {
+    padding: 60px 0 80px;
+  }
+  .page-label {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-size: 0.72rem; color: #808080;
+    letter-spacing: 3px; text-transform: uppercase;
+    font-weight: 500; margin-bottom: 14px;
+  }
+  .page-label::before {
+    content: ''; width: 20px; height: 1px;
+    background: #a0a0a0;
+  }
+  .page-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 2.5rem);
+    font-weight: 700; color: #e8e8e8;
+    letter-spacing: -0.5px; margin-bottom: 16px;
+    line-height: 1.2;
+  }
+  .page-desc {
+    color: #8a8a8a; font-size: 0.95rem;
+    max-width: 600px; margin-bottom: 40px;
+  }
+
+  /* ABOUT */
+  .about-grid {
+    display: grid; grid-template-columns: 1.2fr 1fr;
+    gap: 60px; align-items: center;
+  }
+  .about-text p {
+    color: #b0b0b0; font-size: 1rem;
+    line-height: 1.9; margin-bottom: 18px;
+  }
+  .about-text p:last-child { margin-bottom: 0; }
+  .about-text strong { color: #e8e8e8; font-weight: 600; }
+  .about-text .accent {
+    color: #e8e8e8; font-weight: 500;
+    border-bottom: 1px solid rgba(192, 192, 192, 0.4);
+    padding-bottom: 1px;
+  }
+  .about-photo {
+    position: relative; border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(192, 192, 192, 0.15);
+    aspect-ratio: 3 / 4;
+    transition: transform 0.5s;
+  }
+  .about-photo:hover { transform: translateY(-4px); }
+  .about-photo img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    filter: grayscale(60%);
+    transition: filter 0.5s, transform 0.6s;
+    display: block;
+  }
+  .about-photo:hover img {
+    filter: grayscale(0%);
+    transform: scale(1.05);
+  }
+  .about-photo::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(10,10,10,0.7) 100%);
+    pointer-events: none;
+  }
+  .about-photo-badge {
+    position: absolute; bottom: 18px; left: 18px;
+    z-index: 2;
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 8px 14px; border-radius: 20px;
+    border: 1px solid rgba(192, 192, 192, 0.2);
+  }
+  .about-photo-badge .badge-dot {
+    width: 8px; height: 8px; background: #c0c0c0;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #c0c0c0;
+    animation: pulseLive 2s infinite;
+  }
+  .about-photo-badge span {
+    font-size: 0.72rem; color: #e8e8e8;
+    letter-spacing: 2px; text-transform: uppercase;
+    font-weight: 500;
+  }
+  @keyframes pulseLive {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* SERVICES */
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .svc {
+    background: linear-gradient(180deg, #0f0f0f, #0a0a0a);
+    border: 1px solid rgba(192, 192, 192, 0.1);
+    border-radius: 12px;
+    padding: 30px 26px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative; overflow: hidden;
+  }
+  .svc::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, #c0c0c0, transparent);
+    opacity: 0; transition: opacity 0.4s;
+  }
+  .svc:hover {
+    transform: translateY(-6px);
+    border-color: rgba(192, 192, 192, 0.3);
+    box-shadow: 0 20px 40px -20px rgba(192, 192, 192, 0.2);
+    background: linear-gradient(180deg, #141414, #0a0a0a);
+  }
+  .svc:hover::before { opacity: 1; }
+  .svc-icon {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(192, 192, 192, 0.06);
+    border: 1px solid rgba(192, 192, 192, 0.15);
+    border-radius: 10px; color: #d4d4d4;
+    margin-bottom: 20px; transition: all 0.4s;
+  }
+  .svc:hover .svc-icon {
+    background: rgba(192, 192, 192, 0.12);
+    border-color: rgba(192, 192, 192, 0.35);
+    color: #fff; transform: scale(1.08) rotate(-5deg);
+  }
+  .svc h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem; font-weight: 600;
+    color: #e8e8e8; margin-bottom: 8px;
+    letter-spacing: -0.2px;
+  }
+  .svc p { font-size: 0.85rem; color: #808080; line-height: 1.7; }
+
+  /* GALERI */
+  .galeri-cats {
+    display: flex; flex-wrap: wrap;
+    gap: 4px 22px; margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(192, 192, 192, 0.08);
+  }
+  .cat-link {
+    background: none; border: none;
+    color: #606060;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.88rem; font-weight: 500;
+    letter-spacing: 0.3px; cursor: pointer;
+    padding: 6px 0; position: relative;
+    transition: color 0.3s;
+  }
+  .cat-link::after {
+    content: ''; position: absolute;
+    left: 0; bottom: 0; width: 0; height: 1px;
+    background: #e8e8e8;
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .cat-link:hover { color: #c0c0c0; }
+  .cat-link.active { color: #e8e8e8; font-weight: 600; }
+  .cat-link.active::after { width: 100%; }
+  .cat-link .count {
+    font-size: 0.72rem; opacity: 0.5;
+    margin-left: 4px; font-weight: 400;
+  }
+  .galeri-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .galeri-item {
+    position: relative; border-radius: 10px;
+    overflow: hidden; cursor: pointer;
+    background: #111; aspect-ratio: 1 / 1;
+    border: 1px solid rgba(192, 192, 192, 0.08);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: galeriIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+  }
+  @keyframes galeriIn {
+    from { opacity: 0; transform: scale(0.9) translateY(15px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .galeri-item img {
+    width: 100%; height: 100%; object-fit: cover;
+    display: block;
+    filter: grayscale(70%) brightness(0.85);
+    transition: filter 0.5s, transform 0.5s;
+  }
+  .galeri-item:hover img { filter: grayscale(0%) brightness(1); }
+  .galeri-item::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(10,10,10,0.85) 100%);
+    pointer-events: none; opacity: 0.8;
+    transition: opacity 0.4s;
+  }
+  .galeri-item:hover::after { opacity: 0.4; }
+  .galeri-caption {
+    position: absolute; bottom: 10px;
+    left: 12px; right: 12px; z-index: 2;
+    color: #fff; font-size: 0.72rem;
+    font-weight: 500; letter-spacing: 0.3px;
+    opacity: 0; transform: translateY(8px);
+    transition: all 0.4s;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+  }
+  .galeri-item:hover .galeri-caption {
+    opacity: 1; transform: translateY(0);
+  }
+  .galeri-item.zoomed {
+    transform: scale(1.06);
+    border-color: rgba(192, 192, 192, 0.5);
+    box-shadow: 0 30px 60px -20px rgba(192, 192, 192, 0.4);
+    z-index: 10;
+  }
+  .galeri-item.zoomed img {
+    filter: grayscale(0%) brightness(1.05);
+    transform: scale(1.1);
+  }
+  .galeri-item.zoomed::after { opacity: 0.2; }
+  .galeri-item.zoomed .galeri-caption {
+    opacity: 1; transform: translateY(0);
+    font-size: 0.82rem; font-weight: 600;
+  }
+
+  /* CONTACT */
+  .contact-box {
+    background: linear-gradient(180deg, #0f0f0f, #0a0a0a);
+    border: 1px solid rgba(192, 192, 192, 0.12);
+    border-radius: 16px;
+    padding: 50px 40px;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .contact-box::before {
+    content: ''; position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 60%; height: 1px;
+    background: linear-gradient(90deg, transparent, #c0c0c0, transparent);
+  }
+  .contact-box h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.8rem; font-weight: 700;
+    color: #e8e8e8; margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .contact-box p { color: #8a8a8a; font-size: 0.95rem; margin-bottom: 32px; }
+  .contact-grid {
+    display: flex; justify-content: center;
+    gap: 14px; flex-wrap: wrap;
+  }
+  .contact-btn {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 14px 24px;
+    background: rgba(192, 192, 192, 0.05);
+    border: 1px solid rgba(192, 192, 192, 0.15);
+    border-radius: 10px; color: #d4d4d4;
+    text-decoration: none; font-size: 0.9rem;
+    font-weight: 500; transition: all 0.3s;
+  }
+  .contact-btn:hover {
+    background: rgba(192, 192, 192, 0.12);
+    border-color: rgba(192, 192, 192, 0.4);
+    color: #fff; transform: translateY(-3px);
+  }
+  .contact-btn svg { color: #a0a0a0; transition: color 0.3s, transform 0.3s; }
+  .contact-btn:hover svg { color: #e8e8e8; transform: scale(1.1); }
+  .contact-btn.wa-btn {
+    background: rgba(37, 211, 102, 0.08);
+    border-color: rgba(37, 211, 102, 0.25);
+  }
+  .contact-btn.wa-btn:hover {
+    background: rgba(37, 211, 102, 0.15);
+    border-color: rgba(37, 211, 102, 0.5);
+    box-shadow: 0 10px 30px -10px rgba(37, 211, 102, 0.4);
+  }
+  .contact-btn.wa-btn svg { color: #25d366; }
+  .contact-btn.wa-btn:hover svg { color: #4ade80; }
+
+  /* FOOTER */
+  .page-footer {
+    padding: 40px 0 20px;
+    text-align: center;
+    color: #606060; font-size: 0.82rem;
+    border-top: 1px solid rgba(192, 192, 192, 0.08);
+    margin-top: 40px;
+  }
+  .page-footer .brand-name-sm {
+    font-family: 'Space Grotesk', sans-serif;
+    color: #a0a0a0; font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* NAVBAR */
+  .bottom-nav {
+    position: fixed;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 999;
+    display: flex; align-items: center; gap: 2px;
+    padding: 8px 10px;
+    background: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(192, 192, 192, 0.15);
+    border-radius: 100px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+    animation: navFloatIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 3.5s backwards;
+    max-width: calc(100% - 24px);
+  }
+  @keyframes navFloatIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  .nav-item {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 10px 14px;
+    border-radius: 100px; background: transparent;
+    border: none; color: #808080;
+    font-family: inherit; font-size: 0.78rem;
+    font-weight: 500; letter-spacing: 0.3px;
+    cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative; overflow: hidden; white-space: nowrap;
+    text-decoration: none;
+  }
+  .nav-item svg {
+    width: 18px; height: 18px; flex-shrink: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .nav-item span {
+    max-width: 0; overflow: hidden; opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+  }
+  .nav-item:hover {
+    color: #e8e8e8;
+    background: rgba(192, 192, 192, 0.08);
+  }
+  .nav-item:hover svg { transform: scale(1.15) translateY(-1px); }
+  .nav-item:hover span { max-width: 100px; opacity: 1; margin-left: 2px; }
+  .nav-item.active {
+    color: #0a0a0a;
+    background: linear-gradient(180deg, #e8e8e8, #a0a0a0);
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(192, 192, 192, 0.3);
+  }
+  .nav-item.active svg { transform: scale(1.1); }
+  .nav-item.active span { max-width: 100px; opacity: 1; margin-left: 2px; }
+  .nav-item.jasa {
+    background: linear-gradient(180deg, #22c55e, #16a34a);
+    color: #fff;
+  }
+  .nav-item.jasa:hover {
+    background: linear-gradient(180deg, #4ade80, #22c55e);
+    color: #fff;
+  }
+  .nav-logo-wrap {
+    width: 36px; height: 36px;
+    border-radius: 50%; overflow: hidden;
+    margin-right: 4px;
+    border: 1.5px solid rgba(192, 192, 192, 0.3);
+    flex-shrink: 0; transition: all 0.4s;
+    cursor: pointer;
+  }
+  .nav-logo-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    transition: transform 0.6s;
+  }
+  .nav-logo-wrap:hover {
+    transform: scale(1.1);
+    border-color: rgba(192, 192, 192, 0.7);
+    box-shadow: 0 0 20px rgba(192, 192, 192, 0.4);
+  }
+  .nav-logo-wrap:hover img { transform: rotate(360deg); }
+
+  /* AUDIO PLAYER */
+  .audio-player {
+    position: fixed;
+    bottom: 90px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 998;
+    width: calc(100% - 32px);
+    max-width: 600px;
+    background: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(192, 192, 192, 0.15);
+    border-radius: 100px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    opacity: 0; visibility: hidden;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .audio-player.show { opacity: 1; visibility: visible; }
+  .audio-inner {
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .audio-play {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(192, 192, 192, 0.3);
+    background: linear-gradient(180deg, #1a1a1a, #0f0f0f);
+    color: #e8e8e8;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.3s;
+    flex-shrink: 0; position: relative; overflow: hidden;
+  }
+  .audio-play:hover {
+    border-color: #c0c0c0;
+    box-shadow: 0 0 20px rgba(192, 192, 192, 0.3);
+    transform: scale(1.08);
+  }
+  .audio-play svg { position: absolute; transition: opacity 0.2s, transform 0.2s; }
+  .audio-play .icon-pause { opacity: 0; transform: scale(0.6); }
+  .audio-play.playing .icon-play { opacity: 0; transform: scale(0.6); }
+  .audio-play.playing .icon-pause { opacity: 1; transform: scale(1); }
+  .audio-info {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .audio-title {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.78rem; font-weight: 600;
+    color: #e8e8e8; letter-spacing: 0.3px;
+  }
+  .audio-title svg { color: #a0a0a0; }
+  .audio-title .dot-live {
+    width: 5px; height: 5px; background: #c0c0c0;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #c0c0c0;
+    animation: pulseLive 2s infinite;
+    margin-left: auto;
+  }
+  .audio-progress {
+    height: 3px;
+    background: rgba(192, 192, 192, 0.1);
+    border-radius: 3px;
+    overflow: hidden; cursor: pointer;
+    position: relative;
+  }
+  .audio-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #a0a0a0, #e8e8e8);
+    border-radius: 3px;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 8px rgba(192, 192, 192, 0.5);
+  }
+  .audio-time {
+    font-size: 0.7rem; color: #808080;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .audio-time .sep { color: #505050; margin: 0 3px; }
+  .audio-volume {
+    display: flex; align-items: center; gap: 6px;
+    color: #808080; flex-shrink: 0;
+  }
+  .audio-volume svg { cursor: pointer; transition: color 0.25s; }
+  .audio-volume svg:hover { color: #e8e8e8; }
+  .audio-volume input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 60px; height: 3px;
+    background: rgba(192, 192, 192, 0.15);
+    border-radius: 3px; outline: none; cursor: pointer;
+  }
+  .audio-volume input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 12px; height: 12px;
+    background: #e8e8e8; border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(192, 192, 192, 0.6);
+  }
+  .audio-volume input[type="range"]::-moz-range-thumb {
+    width: 12px; height: 12px;
+    background: #e8e8e8; border: none;
+    border-radius: 50%; cursor: pointer;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 9998; display: none;
+    align-items: flex-start; justify-content: center;
+    padding: 20px 16px;
+    overflow-y: auto;
+  }
+  .modal-overlay.show { display: flex; }
+  .jasa-modal {
+    background: linear-gradient(180deg, #131313, #0a0a0a);
+    border: 1px solid rgba(192, 192, 192, 0.15);
+    border-radius: 24px;
+    width: 100%; max-width: 560px;
+    margin: auto;
+    padding: 28px 24px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+    animation: modalIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.9) translateY(30px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .jasa-modal::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, #22c55e, #16a34a, #22c55e, transparent);
+    border-radius: 24px 24px 0 0;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    background: rgba(192, 192, 192, 0.08);
+    border: 1px solid rgba(192, 192, 192, 0.15);
+    border-radius: 50%;
+    color: #a0a0a0; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.3s;
+  }
+  .modal-close:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    transform: rotate(90deg);
+  }
+  .modal-header {
+    text-align: center; margin-bottom: 24px;
+    padding-top: 8px;
+  }
+  .modal-header-icon {
+    width: 64px; height: 64px; margin: 0 auto 16px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(34, 197, 94, 0.3);
+  }
+  .modal-header h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.4rem; font-weight: 700;
+    color: #e8e8e8; margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .modal-header p {
+    color: #808080; font-size: 0.85rem;
+    line-height: 1.5;
+  }
+
+  /* LAYANAN PICKER */
+  .layanan-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .layanan-card {
+    background: linear-gradient(180deg, #1a1a1a, #0f0f0f);
+    border: 1px solid rgba(192, 192, 192, 0.12);
+    border-radius: 16px;
+    padding: 20px 16px;
+    text-align: center; cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative; overflow: hidden;
+  }
+  .layanan-card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, #22c55e, transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .layanan-card:hover {
+    border-color: rgba(34, 197, 94, 0.5);
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px -15px rgba(34, 197, 94, 0.4);
+    background: linear-gradient(180deg, #1f1f1f, #0f0f0f);
+  }
+  .layanan-card:hover::before { opacity: 1; }
+  .layanan-icon {
+    width: 52px; height: 52px; margin: 0 auto 12px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    transition: transform 0.3s;
+  }
+  .layanan-card:hover .layanan-icon { transform: scale(1.1) rotate(-5deg); }
+  .layanan-icon.web { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+  .layanan-icon.apk { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+  .layanan-icon.coding { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .layanan-icon.servis { background: linear-gradient(135deg, #ef4444, #dc2626); }
+  .layanan-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.92rem; font-weight: 700;
+    color: #e8e8e8; margin-bottom: 4px;
+  }
+  .layanan-card p { font-size: 0.72rem; color: #808080; line-height: 1.4; }
+
+  /* FORM */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px;
+    background: rgba(192, 192, 192, 0.06);
+    border: 1px solid rgba(192, 192, 192, 0.15);
+    border-radius: 10px;
+    color: #a0a0a0; font-size: 0.75rem;
+    font-weight: 600; cursor: pointer;
+    margin-bottom: 16px;
+    transition: all 0.25s;
+    font-family: inherit;
+  }
+  .back-btn:hover {
+    background: rgba(192, 192, 192, 0.12);
+    color: #e8e8e8;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.78rem; color: #d4d4d4;
+    font-weight: 600; margin-bottom: 8px;
+  }
+  .form-label .req { color: #ef4444; }
+  .form-input, .form-textarea {
+    width: 100%; padding: 12px 14px;
+    background: #0a0a0a;
+    border: 2px solid rgba(192, 192, 192, 0.12);
+    border-radius: 12px;
+    color: #e8e8e8;
+    font-family: 'Inter', inherit;
+    font-size: 0.85rem;
+    transition: all 0.25s;
+    outline: none;
+  }
+  .form-input:focus, .form-textarea:focus {
+    border-color: #22c55e;
+    background: #0f0f0f;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+  }
+  .form-textarea { resize: vertical; min-height: 80px; font-family: inherit; }
+
+  /* DOMAIN PREVIEW */
+  .domain-preview {
+    margin-top: 8px;
+    padding: 10px 14px;
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    color: #4ade80;
+    word-break: break-all;
+  }
+  .domain-preview strong { color: #22c55e; }
+
+  .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+  .checkbox-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: #0a0a0a;
+    border: 1.5px solid rgba(192, 192, 192, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s;
+    font-size: 0.82rem;
+    color: #c0c0c0;
+    user-select: none;
+  }
+  .checkbox-item:hover {
+    border-color: rgba(34, 197, 94, 0.4);
+    background: rgba(34, 197, 94, 0.04);
+  }
+  .checkbox-item.checked {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.08);
+    color: #e8e8e8;
+  }
+  .checkbox-item input[type="checkbox"],
+  .checkbox-item input[type="radio"] {
+    appearance: none; -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border: 2px solid rgba(192, 192, 192, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .checkbox-item input[type="radio"] { border-radius: 50%; }
+  .checkbox-item input[type="checkbox"]:checked,
+  .checkbox-item input[type="radio"]:checked {
+    background: #22c55e;
+    border-color: #22c55e;
+  }
+  .checkbox-item input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px; top: 1px;
+    width: 5px; height: 10px;
+    border: solid #fff;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg);
+  }
+  .checkbox-item input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 8px; height: 8px;
+    background: #fff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .checkbox-item .label-text {
+    flex: 1; line-height: 1.4;
+  }
+  .checkbox-item .label-text strong {
+    display: block; color: #e8e8e8;
+    font-weight: 600; margin-bottom: 2px;
+  }
+  .checkbox-item .label-text span {
+    font-size: 0.72rem; color: #808080;
+  }
+
+  .submit-btn {
+    width: 100%; padding: 15px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff; border: none;
+    border-radius: 14px;
+    font-weight: 700; font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.35);
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+    font-family: inherit;
+  }
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(34, 197, 94, 0.5);
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+  }
+
+  .info-box {
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 0.78rem;
+    color: #93c5fd;
+    line-height: 1.5;
+    display: flex; gap: 10px;
+    align-items: flex-start;
+  }
+  .info-box svg { flex-shrink: 0; margin-top: 1px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: 20px; left: 20px; right: 20px;
+    max-width: 400px; margin: 0 auto;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    z-index: 99999;
+    text-align: center;
+    animation: toastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* MOBILE */
+  @media (max-width: 800px) {
+    .about-grid { grid-template-columns: 1fr; gap: 40px; }
+    .page-section { padding: 40px 0 60px; }
+    .contact-box { padding: 40px 24px; }
+    .hero-avatar { width: 110px; height: 110px; }
+    .hero-wrap { padding: 30px 20px 60px; }
+    .banner-top { height: 180px; }
+    .about-photo { aspect-ratio: 4 / 5; }
+    .galeri-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .cat-link { font-size: 0.8rem; }
+    .audio-volume { display: none; }
+    .audio-inner { padding: 8px 12px; gap: 10px; }
+    .audio-play { width: 38px; height: 38px; }
+    .nav-item { padding: 9px 10px; font-size: 0.72rem; gap: 4px; }
+    .nav-item svg { width: 16px; height: 16px; }
+    .nav-item span { display: none; }
+    .nav-item:hover span { display: none; }
+    .nav-item.active span { display: none; }
+    .bottom-nav { padding: 6px 8px; gap: 1px; }
+    .nav-logo-wrap { width: 32px; height: 32px; margin-right: 2px; }
+    .jasa-modal { padding: 24px 18px; border-radius: 20px; }
+    .layanan-grid { grid-template-columns: 1fr; }
+    .modal-header h2 { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="introScreen">
+  <div id="startBox">
+    <img src="./profil.jpg" alt="DraXd" class="intro-logo">
+    <h1 class="intro-title">DraXd System</h1>
+    <p class="intro-sub">Tap button below to launch dashboard</p>
+    <button class="intro-btn" id="startBtn">
+      Get Started
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+  </div>
+  <div id="loadingBox">
+    <div class="spinner"></div>
+    <div class="loading-text">Please wait</div>
+  </div>
+</div>
+
+<!-- PAGE 1: HOME -->
+<div class="page active" id="page-home">
+  <div class="hero-wrap">
+    <div class="hero-bg"></div>
+    <img src="./banner.jpg" alt="Banner DraXd" class="banner-top">
+    <div class="hero-content">
+      <img src="./poto.jpg" alt="Dra" class="hero-avatar">
+      <span class="hero-welcome">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        Welcome to DraXd Web
+      </span>
+      <h1 class="hero-title">Dra</h1>
+      <p class="hero-sub">Developer yang fokus di bidang coding, website, aplikasi Android, dan elektronik. Tempat di mana ide jadi karya.</p>
+      <div class="hero-actions">
+        <button class="hero-cta" onclick="goToPage('about')">
+          Kenalan
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+        <button class="hero-cta green" onclick="openJasa()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Open Jasa
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: ABOUT -->
+<div class="page" id="page-about">
+  <div class="container">
+    <div class="page-section">
+      <span class="page-label">Tentang</span>
+      <h2 class="page-title">Siapa di balik DraXd?</h2>
+      <p class="page-desc">Orang di balik nama DraXd — yang suka ngulik teknologi dari software sampai hardware.</p>
+
+      <div class="about-grid">
+        <div class="about-text">
+          <p>Hi, My Name is <strong>Dra</strong>. Seorang developer yang hobi ngulik teknologi — mulai dari <span class="accent">coding</span>, bikin <span class="accent">website</span>, develop dan modifikasi <span class="accent">aplikasi Android</span>, sampai ngoprek perangkat <span class="accent">elektronik</span>.</p>
+          <p>Bagi saya, ngulik teknologi bukan cuma kerjaan — tapi cara buat terus belajar dan bikin sesuatu yang berguna. DraXd ini adalah tempat saya menuangkan semua hasil kerja, eksperimen, dan project yang saya kerjakan.</p>
+        </div>
+        <div class="about-photo">
+          <img src="./poto2.jpg" alt="Dra">
+          <div class="about-photo-badge">
+            <span class="badge-dot"></span>
+            <span>DraXd</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: SERVICES -->
+<div class="page" id="page-services">
+  <div class="container">
+    <div class="page-section">
+      <span class="page-label">Layanan</span>
+      <h2 class="page-title">Apa yang bisa saya kerjakan</h2>
+      <p class="page-desc">Beberapa keahlian yang saya dalami dan siap bantu buat project kamu.</p>
+
+      <div class="services-grid">
+        <div class="svc">
+          <div class="svc-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h3>Coding & Programming</h3>
+          <p>Bikin program, script, atau tool custom sesuai kebutuhan.</p>
+        </div>
+        <div class="svc">
+          <div class="svc-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>Website Development</h3>
+          <p>Landing page, portfolio, company profile, sampai web app.</p>
+        </div>
+        <div class="svc">
+          <div class="svc-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <h3>Aplikasi Android</h3>
+          <p>Develop APK custom, perbaiki error, atau modifikasi aplikasi.</p>
+        </div>
+        <div class="svc">
+          <div class="svc-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>Elektronik</h3>
+          <p>Servis, perbaikan, dan troubleshooting perangkat elektronik.</p>
+        </div>
+        <div class="svc">
+          <div class="svc-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          </div>
+          <h3>Modifikasi & Repair</h3>
+          <p>Mod APK, game, atau perbaikan software & hardware.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: GALERI -->
+<div class="page" id="page-galeri">
+  <div class="container">
+    <div class="page-section">
+      <span class="page-label">Galeri</span>
+      <h2 class="page-title">Hasil Kerja & Eksperimen</h2>
+      <p class="page-desc">Kumpulan project, eksperimen, dan hasil kerja yang pernah saya kerjakan.</p>
+
+      <div class="galeri-cats" id="galeriCats">
+        <button class="cat-link active" data-cat="all">Semua <span class="count">(20)</span></button>
+        <button class="cat-link" data-cat="aplikasi">Aplikasi <span class="count">(5)</span></button>
+        <button class="cat-link" data-cat="bot-wa">Bot WA <span class="count">(3)</span></button>
+        <button class="cat-link" data-cat="coding">Coding <span class="count">(3)</span></button>
+        <button class="cat-link" data-cat="elektronik">Elektronik <span class="count">(5)</span></button>
+        <button class="cat-link" data-cat="termux-cyber">Termux Cyber <span class="count">(4)</span></button>
+      </div>
+
+      <div class="galeri-grid" id="galeriGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 5: CONTACT -->
+<div class="page" id="page-contact">
+  <div class="container">
+    <div class="page-section">
+      <span class="page-label">Kontak</span>
+      <h2 class="page-title">Ada project? Ngobrol aja</h2>
+      <p class="page-desc">Terbuka untuk diskusi, kolaborasi, atau sekadar tanya-tanya soal teknologi.</p>
+
+      <div class="contact-box">
+        <h2>Hubungi Saya</h2>
+        <p>Pilih salah satu kanal di bawah ini</p>
+        <div class="contact-grid">
+          <a href="https://wa.me/6283165114001?text=Halo%20Dra%2C%20saya%20tertarik%20buat%20kolaborasi" target="_blank" rel="noopener" class="contact-btn wa-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp
+          </a>
+          <a href="mailto:droluxe16@gmail.com" class="contact-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Email
+          </a>
+        </div>
+      </div>
+
+      <div class="page-footer">
+        © 2026 <span class="brand-name-sm">DraXd</span> — Dra. All rights reserved.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="nav-logo-wrap" onclick="goToPage('home')">
+    <img src="./profil.jpg" alt="DraXd Logo">
+  </div>
+  <button class="nav-item active" data-page="home" onclick="goToPage('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="nav-item" data-page="about" onclick="goToPage('about')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Tentang</span>
+  </button>
+  <button class="nav-item" data-page="services" onclick="goToPage('services')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <span>Layanan</span>
+  </button>
+  <button class="nav-item" data-page="galeri" onclick="goToPage('galeri')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <span>Galeri</span>
+  </button>
+  <button class="nav-item jasa" onclick="openJasa()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    <span>Open Jasa</span>
+  </button>
+</nav>
+
+<!-- AUDIO PLAYER -->
+<div class="audio-player" id="audioPlayer">
+  <div class="audio-inner">
+    <button class="audio-play" id="audioPlay" aria-label="Play">
+      <svg class="icon-play" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+      <svg class="icon-pause" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+    </button>
+    <div class="audio-info">
+      <div class="audio-title">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        DraXd Audio
+        <span class="dot-live"></span>
+      </div>
+      <div class="audio-progress" id="audioProgress">
+        <div class="audio-bar" id="audioBar"></div>
+      </div>
+    </div>
+    <div class="audio-time">
+      <span id="curTime">0:00</span>
+      <span class="sep">/</span>
+      <span id="durTime">0:00</span>
+    </div>
+    <div class="audio-volume">
+      <svg id="muteBtn" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+      </svg>
+      <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.6">
+    </div>
+  </div>
+</div>
+
+<audio id="audioEl" src="./musik.mp3" preload="auto" loop></audio>
+
+<!-- MODAL JASA -->
+<div class="modal-overlay" id="jasaModal">
+  <div class="jasa-modal" id="jasaContent"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script>
+  // ===== KONFIG =====
+  const WA_NUMBER = '6283165114001';
+  const BRAND_NAME = 'DraXd';
+
+  // ===== PAGE SYSTEM =====
+  function goToPage(pageName) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('page-' + pageName);
+    if (target) {
+      target.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    document.querySelectorAll('.nav-item[data-page]').forEach(b => {
+      b.classList.toggle('active', b.dataset.page === pageName);
+    });
+  }
+
+  // ===== GALERI =====
+  const galeriData = [
+    { file: './aplikasi/apk1.jpg', cat: 'aplikasi', name: 'APK Project 1' },
+    { file: './aplikasi/apk2.jpg', cat: 'aplikasi', name: 'APK Project 2' },
+    { file: './aplikasi/apk3.jpg', cat: 'aplikasi', name: 'APK Project 3' },
+    { file: './aplikasi/gtr.jpg', cat: 'aplikasi', name: 'GTR App' },
+    { file: './aplikasi/paper.jpg', cat: 'aplikasi', name: 'Paper App' },
+    { file: './bot-wa/bot1.jpg', cat: 'bot-wa', name: 'Bot WA 1' },
+    { file: './bot-wa/bot2.jpg', cat: 'bot-wa', name: 'Bot WA 2' },
+    { file: './bot-wa/bot3.jpg', cat: 'bot-wa', name: 'Bot WA 3' },
+    { file: './coding/c1.jpg', cat: 'coding', name: 'Coding Project 1' },
+    { file: './coding/c2.jpg', cat: 'coding', name: 'Coding Project 2' },
+    { file: './coding/c3.jpg', cat: 'coding', name: 'Coding Project 3' },
+    { file: './elektronik/all.jpg', cat: 'elektronik', name: 'Elektronik All' },
+    { file: './elektronik/elk1.jpg', cat: 'elektronik', name: 'Rangkaian 1' },
+    { file: './elektronik/hdpone.jpg', cat: 'elektronik', name: 'Servis HP' },
+    { file: './elektronik/new.jpg', cat: 'elektronik', name: 'Elektronik Baru' },
+    { file: './elektronik/old.jpg', cat: 'elektronik', name: 'Elektronik Lama' },
+    { file: './termux-cyber/termux1.jpg', cat: 'termux-cyber', name: 'Termux 1' },
+    { file: './termux-cyber/termux2.jpg', cat: 'termux-cyber', name: 'Termux 2' },
+    { file: './termux-cyber/termux3.jpg', cat: 'termux-cyber', name: 'Termux 3' },
+    { file: './termux-cyber/termux4.jpg', cat: 'termux-cyber', name: 'Termux 4' }
+  ];
+
+  let currentZoomed = null;
+
+  function renderGaleri(filter = 'all') {
+    const grid = document.getElementById('galeriGrid');
+    const items = filter === 'all' ? galeriData : galeriData.filter(g => g.cat === filter);
+    grid.innerHTML = items.map((item, i) => `
+      <div class="galeri-item" style="animation-delay: ${i * 0.04}s" onclick="toggleZoom(this)">
+        <img src="${item.file}" alt="${item.name}" loading="lazy">
+        <div class="galeri-caption">${item.name}</div>
+      </div>
+    `).join('');
+  }
+
+  function toggleZoom(el) {
+    if (currentZoomed && currentZoomed !== el) currentZoomed.classList.remove('zoomed');
+    el.classList.toggle('zoomed');
+    currentZoomed = el.classList.contains('zoomed') ? el : null;
+  }
+
+  document.querySelectorAll('.cat-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat-link').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentZoomed = null;
+      renderGaleri(btn.dataset.cat);
+    });
+  });
+
+  renderGaleri('all');
+
+  // ===== INTRO =====
+  const startBtn = document.getElementById('startBtn');
+  const startBox = document.getElementById('startBox');
+  const loadingBox = document.getElementById('loadingBox');
+  const introScreen = document.getElementById('introScreen');
+  const audio = document.getElementById('audioEl');
+  const playBtn = document.getElementById('audioPlay');
+  const audioPlayer = document.getElementById('audioPlayer');
+
+  startBtn.addEventListener('click', () => {
+    startBox.style.display = 'none';
+    loadingBox.style.display = 'flex';
+    setTimeout(() => {
+      introScreen.classList.add('fade-out');
+      audioPlayer.classList.add('show');
+      audio.play().then(() => {
+        playBtn.classList.add('playing');
+      }).catch(err => console.log('Audio blocked:', err));
+    }, 2000);
+  });
+
+  // ===== AUDIO =====
+  const bar = document.getElementById('audioBar');
+  const progress = document.getElementById('audioProgress');
+  const curTime = document.getElementById('curTime');
+  const durTime = document.getElementById('durTime');
+  const volSlider = document.getElementById('volumeSlider');
+  const muteBtn = document.getElementById('muteBtn');
+
+  let lastVolume = 0.6;
+  audio.volume = 0.6;
+
+  function fmt(s) {
+    if (isNaN(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return m + ':' + String(sec).padStart(2, '0');
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play();
+      playBtn.classList.add('playing');
+    } else {
+      audio.pause();
+      playBtn.classList.remove('playing');
+    }
+  });
+
+  audio.addEventListener('loadedmetadata', () => {
+    durTime.textContent = fmt(audio.duration);
+  });
+
+  audio.addEventListener('timeupdate', () => {
+    if (audio.duration) {
+      const pct = (audio.currentTime / audio.duration) * 100;
+      bar.style.width = pct + '%';
+      curTime.textContent = fmt(audio.currentTime);
+    }
+  });
+
+  progress.addEventListener('click', (e) => {
+    const rect = progress.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    if (audio.duration) audio.currentTime = pct * audio.duration;
+  });
+
+  volSlider.addEventListener('input', (e) => {
+    audio.volume = e.target.value;
+    lastVolume = e.target.value;
+    muteBtn.style.opacity = audio.volume === 0 ? '0.4' : '1';
+  });
+
+  muteBtn.addEventListener('click', () => {
+    if (audio.volume > 0) {
+      lastVolume = audio.volume;
+      audio.volume = 0;
+      volSlider.value = 0;
+      muteBtn.style.opacity = '0.4';
+    } else {
+      audio.volume = lastVolume || 0.6;
+      volSlider.value = audio.volume;
+      muteBtn.style.opacity = '1';
+    }
+  });
+
+  // ===== JASA MODAL =====
+  const jasaModal = document.getElementById('jasaModal');
+  const jasaContent = document.getElementById('jasaContent');
+
+  function closeJasa() {
+    jasaModal.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  function openJasa() {
+    jasaModal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    renderLayananPicker();
+  }
+
+  jasaModal.addEventListener('click', (e) => {
+    if (e.target === jasaModal) closeJasa();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeJasa();
+  });
+
+  // ===== LAYANAN PICKER =====
+  function renderLayananPicker() {
+    jasaContent.innerHTML = `
+      <button class="modal-close" onclick="closeJasa()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="modal-header">
+        <div class="modal-header-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </div>
+        <h2>Open Jasa</h2>
+        <p>Pilih layanan yang kamu butuhkan</p>
+      </div>
+      <div class="layanan-grid">
+        <div class="layanan-card" onclick="renderForm('website')">
+          <div class="layanan-icon web">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>Website</h3>
+          <p>Web sekolah, portfolio, toko</p>
+        </div>
+        <div class="layanan-card" onclick="renderForm('apk')">
+          <div class="layanan-icon apk">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          </div>
+          <h3>APK Android</h3>
+          <p>HTML to APK, custom app</p>
+        </div>
+        <div class="layanan-card" onclick="renderForm('coding')">
+          <div class="layanan-icon coding">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h3>Bantu Ngoding</h3>
+          <p>Fix error, bikin script</p>
+        </div>
+        <div class="layanan-card" onclick="renderForm('servis')">
+          <div class="layanan-icon servis">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>Servis Elektronik</h3>
+          <p>Kulkas, TV, HP, dll</p>
+        </div>
+      </div>
+    `;
+  }
+
+  // ===== FORM ORDER =====
+  const infoBox = `
+    <div class="info-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <div><b>Harga menyesuaikan kompleksitas project.</b> Setelah form dikirim, kita diskusi via WA dulu.</div>
+    </div>
+  `;
+
+  function renderForm(type) {
+    const closeBtn = `<button class="modal-close" onclick="closeJasa()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+    const backBtn = `<button class="back-btn" onclick="renderLayananPicker()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Kembali</button>`;
+
+    if (type === 'website') {
+      jasaContent.innerHTML = `
+        ${closeBtn}${backBtn}
+        <div class="modal-header" style="margin-bottom:18px;">
+          <h2>Form Order — Website</h2>
+          <p>Isi data, klik kirim → langsung ke WhatsApp</p>
+        </div>
+        ${infoBox}
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap <span class="req">*</span></label>
+          <input type="text" class="form-input" id="f_nama" placeholder="Contoh: Dra">
+        </div>
+        <div class="form-group">
+          <label class="form-label">No WhatsApp <span class="req">*</span></label>
+          <input type="tel" class="form-input" id="f_wa" placeholder="Contoh: 08123456789">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jenis Website <span class="req">*</span></label>
+          <input type="text" class="form-input" id="f_jenis" placeholder="Contoh: portfolio, sekolah, toko">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pilih Hosting <span class="req">*</span></label>
+          <div class="checkbox-group">
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="radio" name="hosting" value="VERCEL">
+              <div class="label-text">
+                <strong>VERCEL</strong>
+                <span>Ngebut & Modern</span>
+              </div>
+            </label>
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="radio" name="hosting" value="EDGEONE">
+              <div class="label-text">
+                <strong>EDGEONE</strong>
+                <span>Anti DDoS & Aman</span>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nama Website <span class="req">*</span></label>
+          <input type="text" class="form-input" id="f_namaweb" placeholder="Contoh: dra-web" oninput="updateDomainPreview()">
+          <div class="domain-preview" id="domainPreview">Pilih hosting dulu → domain otomatis muncul</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deskripsi Website <span class="req">*</span></label>
+          <textarea class="form-textarea" id="f_deskripsi" placeholder="Contoh: Web portfolio pribadi dengan galeri project"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">File (Logo / Foto / Video)</label>
+          <div class="checkbox-group">
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="radio" name="file_status" value="SUDAH ADA — kirim via WA">
+              <span class="label-text">Sudah ada — kirim via WA</span>
+            </label>
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="radio" name="file_status" value="BELUM ADA — minta dibikinin">
+              <span class="label-text">Belum ada — minta dibikinin</span>
+            </label>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="kirimOrder('website')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Kirim ke WhatsApp
+        </button>
+      `;
+    } else if (type === 'apk') {
+      jasaContent.innerHTML = `
+        ${closeBtn}${backBtn}
+        <div class="modal-header" style="margin-bottom:18px;">
+          <h2>Form Order — APK</h2>
+          <p>Isi data, klik kirim → langsung ke WhatsApp</p>
+        </div>
+        ${infoBox}
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap <span class="req">*</span></label>
+          <input type="text" class="form-input" id="f_nama" placeholder="Contoh: Dra">
+        </div>
+        <div class="form-group">
+          <label class="form-label">No WhatsApp <span class="req">*</span></label>
+          <input type="tel" class="form-input" id="f_wa" placeholder="Contoh: 08123456789">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nama Aplikasi <span class="req">*</span></label>
+          <input type="text" class="form-input" id="f_appname" placeholder="Contoh: DraXd App">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Versi APK</label>
+          <input type="text" class="form-input" id="f_versi" placeholder="Contoh: 1.0.0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Package Name (opsional)</label>
+          <input type="text" class="form-input" id="f_paket" placeholder="Contoh: com.draxd.app">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Pilih Build <span class="req">*</span></label>
+          <div class="checkbox-group">
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="radio" name="build" value="SKETCHWARE (HTML to APK)">
+              <div class="label-text">
+                <strong>SKETCHWARE</strong>
+                <span>HTML to APK — simple & cepat</span>
+              </div>
+            </label>
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="radio" name="build" value="AIDE (Pro Custom)">
+              <div class="label-text">
+                <strong>AIDE</strong>
+                <span>Pro Custom — fitur lengkap</span>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">File Website / HTML <span class="req">*</span></label>
+          <div class="checkbox-group">
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="radio" name="file_apk" value="SUDAH ADA — kirim via WA">
+              <span class="label-text">Sudah ada — kirim via WA</span>
+            </label>
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="radio" name="file_apk" value="BELUM ADA — minta dibikinin">
+              <span class="label-text">Belum ada — minta dibikinin</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deskripsi / Fitur</label>
+          <textarea class="form-textarea" id="f_deskripsi" placeholder="Contoh: Splash screen, offline mode"></textarea>
+        </div>
+        <button class="submit-btn" onclick="kirimOrder('apk')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Kirim ke WhatsApp
+        </button>
+      `;
+    } else if (type === 'coding') {
+      jasaContent.innerHTML = `
+        ${closeBtn}${backBtn}
+        <div class="modal-header" style="margin-bottom:18px;">
+          <h2>Form Order — Bantu Ngoding</h2>
+          <p>Isi data, klik kirim → langsung ke WhatsApp</p>
+        </div>
+        ${infoBox}
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap <span class="req">*</span></label>
+          <input type="text" class="form-input" id="f_nama" placeholder="Contoh: Dra">
+        </div>
+        <div class="form-group">
+          <label class="form-label">No WhatsApp <span class="req">*</span></label>
+          <input type="tel" class="form-input" id="f_wa" placeholder="Contoh: 08123456789">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jenis Bantuan <span class="req">*</span></label>
+          <div class="checkbox-group">
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="checkbox" value="Debug / Fix Error">
+              <span class="label-text">Debug / Fix Error</span>
+            </label>
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="checkbox" value="Bikin Script">
+              <span class="label-text">Bikin Script</span>
+            </label>
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="checkbox" value="Bikin Program">
+              <span class="label-text">Bikin Program</span>
+            </label>
+            <label class="checkbox-item" onclick="toggleCheck(this)">
+              <input type="checkbox" value="Mentoring / Belajar">
+              <span class="label-text">Mentoring / Belajar</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bahasa / Framework</label>
+          <input type="text" class="form-input" id="f_bahasa" placeholder="Contoh: HTML, CSS, JS, Python">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deskripsi Masalah <span class="req">*</span></label>
+          <textarea class="form-textarea" id="f_deskripsi" placeholder="Jelaskan sedetail mungkin..."></textarea>
+        </div>
+        <button class="submit-btn" onclick="kirimOrder('coding')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Kirim ke WhatsApp
+        </button>
+      `;
+    } else if (type === 'servis') {
+      jasaContent.innerHTML = `
+        ${closeBtn}${backBtn}
+        <div class="modal-header" style="margin-bottom:18px;">
+          <h2>Form Order — Servis Elektronik</h2>
+          <p>Isi data, klik kirim → langsung ke WhatsApp</p>
+        </div>
+        ${infoBox}
+        <div class="form-group">
+          <label class="form-label">Nama Lengkap <span class="req">*</span></label>
+          <input type="text" class="form-input" id="f_nama" placeholder="Contoh: Dra">
+        </div>
+        <div class="form-group">
+          <label class="form-label">No WhatsApp <span class="req">*</span></label>
+          <input type="tel" class="form-input" id="f_wa" placeholder="Contoh: 08123456789">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Jenis Perangkat <span class="req">*</span></label>
+          <input type="text" class="form-input" id="f_perangkat" placeholder="Contoh: Kulkas, TV, HP">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Keluhan / Masalah <span class="req">*</span></label>
+          <textarea class="form-textarea" id="f_keluhan" placeholder="Contoh: Lampu nyala tapi nggak dingin"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lokasi (opsional)</label>
+          <input type="text" class="form-input" id="f_lokasi" placeholder="Contoh: Kadugede, Kuningan">
+        </div>
+        <button class="submit-btn" onclick="kirimOrder('servis')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Kirim ke WhatsApp
+        </button>
+      `;
+    }
+  }
+
+  function toggleCheck(el) {
+    const inputs = el.parentElement.querySelectorAll('input');
+    setTimeout(() => {
+      inputs.forEach(inp => {
+        inp.closest('.checkbox-item').classList.toggle('checked', inp.checked);
+      });
+    }, 10);
+  }
+
+  function updateDomainPreview() {
+    const namaWeb = document.getElementById('f_namaweb')?.value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    const hosting = document.querySelector('input[name="hosting"]:checked');
+    const preview = document.getElementById('domainPreview');
+    if (!preview) return;
+    if (!hosting) {
+      preview.innerHTML = 'Pilih hosting dulu → domain otomatis muncul';
+      return;
+    }
+    if (!namaWeb) {
+      preview.innerHTML = 'Ketik nama website → domain otomatis muncul';
+      return;
+    }
+    let domain = '';
+    if (hosting.value === 'VERCEL') domain = namaWeb + '.vercel.app';
+    else if (hosting.value === 'EDGEONE') domain = namaWeb + '.edgeone.dev';
+    preview.innerHTML = `Domain kamu: <strong>${domain}</strong>`;
+  }
+
+  // Update domain preview pas hosting berubah
+  document.addEventListener('change', (e) => {
+    if (e.target.name === 'hosting') updateDomainPreview();
+  });
+
+  // ===== KIRIM ORDER =====
+  function kirimOrder(type) {
+    let msg = '';
+    const nama = document.getElementById('f_nama')?.value.trim();
+    const wa = document.getElementById('f_wa')?.value.trim();
+
+    if (!nama) { showToast('Nama wajib diisi!'); return; }
+    if (!wa) { showToast('No WA wajib diisi!'); return; }
+
+    if (type === 'website') {
+      const jenis = document.getElementById('f_jenis')?.value.trim();
+      const namaweb = document.getElementById('f_namaweb')?.value.trim();
+      const deskripsi = document.getElementById('f_deskripsi')?.value.trim();
+      const hosting = document.querySelector('input[name="hosting"]:checked');
+      const fileStatus = document.querySelector('input[name="file_status"]:checked');
+
+      if (!jenis) { showToast('Jenis website wajib diisi!'); return; }
+      if (!hosting) { showToast('Pilih hosting!'); return; }
+      if (!namaweb) { showToast('Nama website wajib diisi!'); return; }
+      if (!deskripsi) { showToast('Deskripsi wajib diisi!'); return; }
+
+      const domain = hosting.value === 'VERCEL' ? namaweb + '.vercel.app' : namaweb + '.edgeone.dev';
+
+      msg = `Halo *${BRAND_NAME}*! Saya mau order:\n\n`;
+      msg += `*FORM ORDER WEBSITE*\n\n`;
+      msg += `*1. Nama Lengkap:* ${nama}\n`;
+      msg += `*2. No WA:* ${wa}\n`;
+      msg += `*3. Jenis Website:* ${jenis}\n`;
+      msg += `*4. Hosting:* ${hosting.value}\n`;
+      msg += `*5. Nama Website:* ${namaweb}\n`;
+      msg += `*6. Domain:* ${domain}\n`;
+      msg += `*7. Deskripsi:* ${deskripsi}\n`;
+      msg += `*8. File:* ${fileStatus ? fileStatus.value : '-'}\n\n`;
+      msg += `Harga menyesuaikan ya kak, kita diskusi dulu.`;
+    } else if (type === 'apk') {
+      const appname = document.getElementById('f_appname')?.value.trim();
+      const versi = document.getElementById('f_versi')?.value.trim();
+      const paket = document.getElementById('f_paket')?.value.trim();
+      const deskripsi = document.getElementById('f_deskripsi')?.value.trim();
+      const build = document.querySelector('input[name="build"]:checked');
+      const fileStatus = document.querySelector('input[name="file_apk"]:checked');
+
+      if (!appname) { showToast('Nama aplikasi wajib diisi!'); return; }
+      if (!build) { showToast('Pilih build!'); return; }
+      if (!fileStatus) { showToast('Pilih status file!'); return; }
+
+      msg = `Halo *${BRAND_NAME}*! Saya mau order:\n\n`;
+      msg += `*FORM ORDER APK*\n\n`;
+      msg += `*1. Nama Lengkap:* ${nama}\n`;
+      msg += `*2. No WA:* ${wa}\n`;
+      msg += `*3. Nama Aplikasi:* ${appname}\n`;
+      msg += `*4. Versi:* ${versi || '1.0.0'}\n`;
+      msg += `*5. Package:* ${paket || '-'}\n`;
+      msg += `*6. Build:* ${build.value}\n`;
+      msg += `*7. File:* ${fileStatus.value}\n`;
+      msg += `*8. Deskripsi:* ${deskripsi || '-'}\n\n`;
+      msg += `Harga menyesuaikan ya kak, kita diskusi dulu.`;
+    } else if (type === 'coding') {
+      const bahasa = document.getElementById('f_bahasa')?.value.trim();
+      const deskripsi = document.getElementById('f_deskripsi')?.value.trim();
+      const bantuan = Array.from(document.querySelectorAll('.checkbox-item input[type="checkbox"]:checked')).map(c => c.value);
+
+      if (bantuan.length === 0) { showToast('Pilih jenis bantuan!'); return; }
+      if (!deskripsi) { showToast('Deskripsi wajib diisi!'); return; }
+
+      msg = `Halo *${BRAND_NAME}*! Saya mau order:\n\n`;
+      msg += `*FORM ORDER BANTU NGODING*\n\n`;
+      msg += `*1. Nama Lengkap:* ${nama}\n`;
+      msg += `*2. No WA:* ${wa}\n`;
+      msg += `*3. Jenis Bantuan:*\n`;
+      bantuan.forEach(b => msg += `   - ${b}\n`);
+      msg += `*4. Bahasa:* ${bahasa || '-'}\n`;
+      msg += `*5. Deskripsi:* ${deskripsi}\n\n`;
+      msg += `Harga menyesuaikan ya kak, kita diskusi dulu.`;
+    } else if (type === 'servis') {
+      const perangkat = document.getElementById('f_perangkat')?.value.trim();
+      const keluhan = document.getElementById('f_keluhan')?.value.trim();
+      const lokasi = document.getElementById('f_lokasi')?.value.trim();
+
+      if (!perangkat) { showToast('Jenis perangkat wajib diisi!'); return; }
+      if (!keluhan) { showToast('Keluhan wajib diisi!'); return; }
+
+      msg = `Halo *${BRAND_NAME}*! Saya mau order:\n\n`;
+      msg += `*FORM ORDER SERVIS ELEKTRONIK*\n\n`;
+      msg += `*1. Nama Lengkap:* ${nama}\n`;
+      msg += `*2. No WA:* ${wa}\n`;
+      msg += `*3. Perangkat:* ${perangkat}\n`;
+      msg += `*4. Keluhan:* ${keluhan}\n`;
+      msg += `*5. Lokasi:* ${lokasi || '-'}\n\n`;
+      msg += `Harga menyesuaikan ya kak, kita diskusi dulu.`;
+    }
+
+    const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+    window.open(waUrl, '_blank');
+    showToast('Membuka WhatsApp...');
+    setTimeout(closeJasa, 800);
+  }
+
+  function showToast(message) {
+    const oldToast = document.querySelector('.toast');
+    if (oldToast) oldToast.remove();
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+</script>
+
+</body>
+</html>
